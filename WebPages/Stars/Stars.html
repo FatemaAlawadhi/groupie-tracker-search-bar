@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Groupie Tracker</title>
+    <link rel="stylesheet" type="text/css" href="../../style/Stars/Card.css">
+    <link rel="stylesheet" type="text/css" href="../../style/Stars/StarsPage.css">
+    <link rel="stylesheet" type="text/css" href="../../style/Nav.css">
+    <link rel="stylesheet" type="text/css" href="../../style/Stars/SearchBar.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <header>
+        <a href="/about" class="logo">
+            <h1>Groupie Tracker</h1>
+        </a>
+        <nav class="NavBar">
+            <a href="/">Home</a>
+            <a href="/stars">Stars</a>
+            <a href="/about">About us</a>
+        </nav>
+    </header>
+    <div class="content">
+        <div class="searchBox">
+            <input class="searchInput" id="searchInput" type="text" name="" placeholder="Search"
+                onkeyup="handleSearchInput(this.value)">
+            <div id="suggestionsContainer"></div>
+            <button class="searchButton" id="searchButton" onclick="searchBands({{.Artists}})" title=" Search"><svg
+                    xmlns="http://www.w3.org/2000/svg" width="29" height="29" viewBox="0 0 29 29" fill="none">
+                    <g clip-path="url(#clip0_2_17)">
+                        <g filter="url(#filter0_d_2_17)">
+                            <path
+                                d="M23.7953 23.9182L19.0585 19.1814M19.0585 19.1814C19.8188 18.4211 20.4219 17.5185 20.8333 16.5251C21.2448 15.5318 21.4566 14.4671 21.4566 13.3919C21.4566 12.3167 21.2448 11.252 20.8333 10.2587C20.4219 9.2653 19.8188 8.36271 19.0585 7.60242C18.2982 6.84214 17.3956 6.23905 16.4022 5.82759C15.4089 5.41612 14.3442 5.20435 13.269 5.20435C12.1938 5.20435 11.1291 5.41612 10.1358 5.82759C9.1424 6.23905 8.23981 6.84214 7.47953 7.60242C5.94407 9.13789 5.08145 11.2204 5.08145 13.3919C5.08145 15.5634 5.94407 17.6459 7.47953 19.1814C9.01499 20.7168 11.0975 21.5794 13.269 21.5794C15.4405 21.5794 17.523 20.7168 19.0585 19.1814Z"
+                                stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                                shape-rendering="crispEdges"></path>
+                        </g>
+                    </g>
+                    <defs>
+                        <filter id="filter0_d_2_17" x="-0.418549" y="3.70435" width="29.7139" height="29.7139"
+                            filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                            <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                            <feColorMatrix in="SourceAlpha" type="matrix"
+                                values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                            <feOffset dy="4"></feOffset>
+                            <feGaussianBlur stdDeviation="2"></feGaussianBlur>
+                            <feComposite in2="hardAlpha" operator="out"></feComposite>
+                            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0">
+                            </feColorMatrix>
+                            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2_17"></feBlend>
+                            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2_17" result="shape">
+                            </feBlend>
+                        </filter>
+                        <clipPath id="clip0_2_17">
+                            <rect width="28.0702" height="28.0702" fill="white"
+                                transform="translate(0.403503 0.526367)"></rect>
+                        </clipPath>
+                    </defs>
+                </svg></button>
+        </div>
+        <h1 id="noResultMessage">No Result Found</h1>
+        <div class="CardsContainer">
+            {{ range .Artists }}
+            {{ template "card" .}}
+            {{end}}
+        </div>
+    </div>
+
+    <script>
+        var suggestions = JSON.parse('{{.SuggestionsJS}}');
+
+        function handleSearchInput() {
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+            const suggestionsContainer = document.getElementById('suggestionsContainer');
+            suggestionsContainer.innerHTML = '';
+
+            // Use Set to store unique suggestions
+            const uniqueSuggestions = new Set();
+
+            // Filter suggestions based on search input and add them to uniqueSuggestions Set
+            suggestions.forEach(suggestion => {
+                const suggestionLowerCase = suggestion.toLowerCase();
+                if (suggestionLowerCase.includes(searchInput)) {
+                    uniqueSuggestions.add(suggestion);
+                }
+            });
+
+            // Convert Set to an array and limit the suggestions to a maximum of 10
+            const filteredSuggestions = Array.from(uniqueSuggestions).slice(0, 10);
+
+            // Display the filtered suggestions
+            filteredSuggestions.forEach(suggestion => {
+                const suggestionElement = document.createElement('div');
+                suggestionElement.textContent = suggestion;
+                suggestionElement.addEventListener('click', () => {
+                    document.getElementById('searchInput').value = suggestion; // Write suggestion in the input field
+                    suggestionsContainer.innerHTML = ''; // Clear suggestions when a suggestion is clicked
+                });
+                suggestionsContainer.appendChild(suggestionElement);
+            });
+
+            // Clear suggestions when the search input is empty
+            if (searchInput === '') {
+                suggestionsContainer.innerHTML = '';
+            }
+        }
+        // Assuming the 'data' variable is accessible globally and contains the artist data
+
+        function searchBands(data) {
+            // Get the input value
+            var anyMatch = false;
+            var input = document.getElementById('searchInput').value.trim().toLowerCase();
+            var ignoredPhrases = [
+                ' - artist/band',
+                ' - member',
+                ' - creation date',
+                ' - first album',
+                ' - Location',
+                ' - Date',
+                ' - Country',
+                ' - City'
+            ];
+
+            // Remove ignored phrases from the input
+            ignoredPhrases.forEach(function (phrase) {
+                input = input.replace(phrase.toLowerCase(), '');
+            });
+
+            // Trim leading and trailing spaces from the input
+            input = input.trim();
+
+            // Get all the band cards
+            var cards = document.getElementsByClassName('container noselect');
+
+            // Iterate through the band cards and hide/show them based on the search input
+            for (var i = 0; i < cards.length; i++) {
+                var bandNameElement = cards[i].querySelector('.name');
+                var bandName = bandNameElement.textContent.toLowerCase();
+
+                // Find the artist in the 'data.Artists' array by matching the name
+                var artist = data.find(function (artist) {
+                    return artist.name.toLowerCase() === bandName;
+                });
+
+                // Show or hide the card based on the search input match
+                if (artist && matchesSearchInput(artist, input)) {
+                    cards[i].style.display = 'block';
+                    anyMatch = true;
+                } else {
+                    cards[i].style.display = 'none';
+                }
+            }
+            if (!anyMatch) {
+                displayNoResultMessage();
+            }
+
+
+        }
+        function displayNoResultMessage() {
+            // Get the element where you want to display the message
+            var messageElement = document.getElementById('noResultMessage');
+
+            // Set the message text
+            messageElement.textContent = 'No result found';
+
+            // Show the message element
+            messageElement.style.display = 'block';
+            var searchButton = document.getElementById('searchButton');
+            searchButton.addEventListener('click', function () {
+                // Hide the message element
+                messageElement.style.display = 'none';
+            });
+        }
+
+        // Function to check if the artist's data matches the search input
+        function matchesSearchInput(artist, input) {
+            // Check the name (use lowercase property name)
+            if (artist.name && artist.name.toLowerCase().includes(input)) {
+                return true;
+            }
+
+            // Check the members (use lowercase property name)
+            if (artist.members && Array.isArray(artist.members)) {
+                for (var j = 0; j < artist.members.length; j++) {
+                    if (artist.members[j] && artist.members[j].toLowerCase().includes(input)) {
+                        return true;
+                    }
+                }
+            }
+
+            // Check the creation date
+            if (artist.creationDate && artist.creationDate === parseInt(input)) {
+                return true;
+            }
+
+            // Check the first album
+            if (artist.firstAlbum && artist.firstAlbum.includes(input)) {
+                return true;
+            }
+
+            // Check the location dates
+            if (artist.LocationDates && Array.isArray(artist.LocationDates)) {
+                for (var k = 0; k < artist.LocationDates.length; k++) {
+                    var location = artist.LocationDates[k];
+                    if (
+                        location.Country &&
+                        location.Country.toLowerCase().includes(input)
+                    ) {
+                        return true;
+                    }
+                    if (
+                        location.City &&
+                        location.City.toLowerCase().includes(input)
+                    ) {
+                        return true;
+                    }
+                    var inputParts = input.toLowerCase().split('-');
+                    if (inputParts.length === 2) {
+                        var city = inputParts[0].trim();
+                        var country = inputParts[1].trim();
+                        if (
+                            location.City &&
+                            location.City.toLowerCase().includes(city) &&
+                            location.Country &&
+                            location.Country.toLowerCase().includes(country)
+                        ) {
+                            return true;
+                        }
+                    }
+
+                    if (location.Dates && Array.isArray(location.Dates)) {
+                        for (var l = 0; l < location.Dates.length; l++) {
+                            if (location.Dates[l] && location.Dates[l].toLowerCase().includes(input)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        function redirectToStarDetails(id) {
+            window.location.href = "/stardetails/" + id;
+        }
+    </script>
+
+</body>
+
+
+
+</html>
